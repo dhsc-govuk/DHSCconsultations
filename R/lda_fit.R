@@ -25,14 +25,15 @@
 #' @importFrom rlang :=
 #'
 fit_lda <- function(
-    data,
-    col_resp_id,
-    question_topic_ranges,
-    seed,
-    clean_text_fn,
-    glossary_words,
-    stop_words,
-    stem_word_exceptions) {
+  data,
+  col_resp_id,
+  question_topic_ranges,
+  seed,
+  clean_text_fn,
+  glossary_words,
+  stop_words,
+  stem_word_exceptions
+) {
   assert_data_frame(data)
   assert_string(col_resp_id)
   assert_list(question_topic_ranges, types = c("integerish"), names = "named")
@@ -55,6 +56,7 @@ fit_lda <- function(
       unnest_to_dtm(col_resp_id, col_word = "word")
 
     topic_number_range <- question_topic_ranges[[col]]
+    future::plan("multisession")
 
     return(
       topic_number_range |>
@@ -69,7 +71,7 @@ fit_lda <- function(
   questions <- names(question_topic_ranges)
   lda_out <- questions |>
     rlang::set_names(questions) |>
-    purrr::map(fn, .progress = "questions processed")
+    furrr::future_map(fn, .progress = TRUE)
 
   return(lda_out)
 }
@@ -126,7 +128,6 @@ view_lda_fit_loglikelihood <- function(lda_fit_list) {
 }
 
 
-
 #' Write plots and LDA object to folder
 #'
 #' Outputs all plots and objects into the specified `folder` using the
@@ -143,9 +144,10 @@ view_lda_fit_loglikelihood <- function(lda_fit_list) {
 #' @export
 #'
 write_lda_fit <- function(
-    lda_fit_list,
-    folder,
-    prefix = basename(folder)) {
+  lda_fit_list,
+  folder,
+  prefix = basename(folder)
+) {
   assert_list(lda_fit_list, types = c("list"), names = "named")
   assert_string(folder)
   assert_string(prefix)
