@@ -71,7 +71,7 @@ fit_lda <- function(
   questions <- names(question_topic_ranges)
   lda_out <- questions |>
     rlang::set_names(questions) |>
-    furrr::future_map(fn, .progress = TRUE)
+    furrr::future_map(fn)
 
   return(lda_out)
 }
